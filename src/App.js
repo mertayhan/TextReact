@@ -1,26 +1,69 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, { Component } from "react";
+import UserList from "./UsersList";
+import AlbumList from "./AlbumsList";
+import { Container, Row, } from "reactstrap";
+import axios from "axios";
+import { BrowserRouter as Switch, Route } from "react-router-dom";
+import Form1 from './Form1';
+import AboutMe from "./AboutMe";
+import NotFound from "./NotFound";
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+export default class App extends Component {
+  state = {
+    currentUsers: "",
+    albums: []
+  };
+
+  changeUsers = user => {
+    this.setState({ currentUsers: user });
+    this.getAlbums(user.id);
+  };
+
+  componentDidMount() {
+    this.getAlbums();
+  }
+
+  getAlbums = userId => {
+    let url = "https://jsonplaceholder.typicode.com/albums";
+    if (userId) {
+      url += "?userId=" + userId;
+    }
+    axios.get(url).then(res => {
+      this.setState({ albums: res.data });
+    });
+  };
+
+  render() {
+    return (
+      <div className="App">
+        <Container>
+          <Row></Row>
+          <Row>
+            <UserList
+              currentUsers={this.state.currentUsers}
+              changeUsers={this.changeUsers}
+            ></UserList>
+          </Row>
+          <Row>
+            <Switch>
+              <Route
+                exact
+                path="/"
+                render={props => (
+                  <AlbumList
+                    {...props}
+                    currentUsers={this.state.currentUsers}
+                    albums={this.state.albums}
+                  ></AlbumList>
+                )}
+              ></Route>
+              <Route path="/AboutMe" component={AboutMe}></Route>
+              <Route path="/form" component={Form1}></Route>
+              <Route component={NotFound}></Route>
+            </Switch>
+          </Row>
+        </Container>
+      </div>
+    );
+  }
 }
-
-export default App;
